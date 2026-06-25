@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.db
+.env
+.vscode/
+.idea/
+
+redis-data/
+
+.venv/
+venv/
+
+*.log
