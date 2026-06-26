@@ -160,7 +160,7 @@ Data         v
            In Redis
 ```
 
-<p><strong>Complete:</strong> ✅ Redis acting as both cache and message broker.</p>
+<p><strong>Completed:</strong> ✅ Redis acting as both cache and message broker.</p>
 
 <hr>
 
@@ -194,7 +194,7 @@ Data         v
   <li>Non-blocking API responses</li>
 </ul>
 
-<p><strong>Complete:</strong> ✅ Worker processing pipeline operational.</p>
+<p><strong>Completed:</strong> ✅ Worker processing pipeline operational.</p>
 
 <hr>
 
@@ -226,7 +226,7 @@ dao/
 └── services.py
 ```
 
-<p><strong>Complete:</strong> ✅ Persistent storage abstraction implemented.</p>
+<p><strong>Completed:</strong> ✅ Persistent storage abstraction implemented.</p>
 
 <hr>
 
@@ -262,7 +262,7 @@ docker compose ps
 docker compose logs -f
 ```
 
-<p><strong>Complete:</strong> ✅ Entire application deployed through Docker Compose.</p>
+<p><strong>Complete:</strong>  Entire application deployed through Docker Compose.</p>
 
 <hr>
 
