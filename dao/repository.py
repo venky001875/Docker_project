@@ -1,5 +1,5 @@
-from database import SessionLocal
-from models import Task
+from dao.database import SessionLocal
+from dao.models import Task
 
 
 def save_task(task_id, number, result):

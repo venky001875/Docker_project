@@ -3,29 +3,31 @@ import json
 import redis
 import os
 import sys
+import logging
 
-# Dynamically find the absolute path to the 'dao' folder relative to this worker.py file
+# Configure professional, structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
+logger = logging.getLogger("background-worker")
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
-dao_path = os.path.join(current_dir, "..", "dao")
-sys.path.append(dao_path)
+sys.path.append(os.path.dirname(current_dir))
 
-from repository import save_task
-
-# FIX: Added socket_timeout and retry configurations to keep connection alive indefinitely
 r = redis.Redis(
-    host="localhost", 
+    host="redis", 
     port=6379, 
     decode_responses=True,
-    socket_timeout=60,             # Checks connection life every 60 seconds
+    socket_timeout=60,             
     socket_connect_timeout=10,
-    retry_on_timeout=True          # Automatically reconnects if a timeout occurs
+    retry_on_timeout=True          
 )
 
-print("🚀 Background Worker started... Waiting for tasks in 'task_queue'...")
+logger.info("🚀 Background Worker started... Waiting for tasks in 'task_queue'...")
 
 while True:
     try:
-        # BLPOP blocks the script until an item is available in the 'task_queue'
         task_data = r.blpop("task_queue", timeout=0)
         
         if task_data:
@@ -35,25 +37,22 @@ while True:
             task_id = task.get("task_id")
             number = task.get("number")
             
-            print(f"📦 Processing Task {task_id}: Calculating square of {number}...")
+            logger.info(f"📦 TASK RECEIVED | task_id: {task_id} | Calculating square of {number}...")
             
-            r.set(f"task:{task_id}:status", "processing")
-            
-            time.sleep(2)  # Simulate heavy processing
+            time.sleep(2)  # Simulating heavy background processing
             result = number * number
             
-            save_task(task_id, number, result)
-            
-            r.set(f"task:{task_id}:result", result)
-            r.set(f"task:{task_id}:status", "completed")
+            response_payload = {
+                "result": result
+            }
+            r.set(f"task:{task_id}", json.dumps(response_payload))
             r.set(f"result:{number}", result, ex=3600)
             
-            print(f"✅ Task {task_id} complete! Result {result} cached and saved to DB.")
+            logger.info(f"✅ TASK COMPLETE | task_id: {task_id} | Result {result} cached successfully.")
             
     except redis.exceptions.TimeoutError:
-        # If Redis idles too long, it will fire this block, print this message, and loop back smoothly without crashing!
-        print("🔄 Connection idled. Refreshing worker connection pool...")
+        logger.warning("🔄 Connection idled. Refreshing worker connection pool...")
         continue
     except Exception as e:
-        print(f"❌ Unexpected Error: {e}")
+        logger.error(f"❌ Unexpected Error: {str(e)}")
         time.sleep(2)

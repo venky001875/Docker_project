@@ -1,0 +1,65 @@
+services:
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy  # Ensures API doesn't start until Redis is fully working
+    networks:
+      - microservices-network
+    # Step 1: FastAPI Health Check (Using python urllib since curl isn't in slim images)
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    build: ./worker
+    volumes:
+      - ./dao:/app/dao
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy  # Ensures workers don't start until Redis is fully working
+    networks:
+      - microservices-network
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 📈 STEP 5: Prometheus Monitoring Service Added Here
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090" # Exposes the Prometheus Dashboard UI on your host machine
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # Mounts your configuration file
+    networks:
+      - microservices-network # Connects Prometheus to the isolated network
+    depends_on:
+      api-gateway:
+        condition: service_healthy # Waits until the API is healthy before scraping metrics
+
+volumes:
+  redis-data:
+
+networks:
+  microservices-network:
+    driver: bridge

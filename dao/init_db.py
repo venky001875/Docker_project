@@ -1,4 +1,4 @@
-from services import create_tables
+from dao.services import create_tables
 
 create_tables()
 

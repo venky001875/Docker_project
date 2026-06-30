@@ -1,10 +1,9 @@
 import os
 import redis
-from dotenv import load_dotenv
 
-load_dotenv("../.env")
-
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+# NATIVE DOCKER ENVIRONMENT LOADING
+# Docker automatically handles the .env injection, so we read directly from os.environ
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_DB = int(os.getenv("REDIS_DB", 0))
 
